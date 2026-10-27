@@ -1,145 +1,150 @@
-# LSTM 中文文本生成 - 西游记
+# LSTM Chinese Text Generation — Journey to the West
 
-基于 LSTM（长短期记忆网络）的中文文本生成项目，使用《西游记》原著作为训练数据，学习古典文学的语言风格并生成类似风格的文本。
+A Chinese text generation project based on LSTM (Long Short-Term Memory). It trains on the original text of *Journey to the West* and learns to generate text in a similar classical style.
 
-## 项目简介
+## Overview
 
-本项目使用 PyTorch 框架构建了一个多层 LSTM 神经网络，通过字符级别的语言建模来学习《西游记》的文本特征，实现自动生成具有古典文学风格的中文文本。
+This project builds a multi-layer LSTM in PyTorch. It uses character-level language modeling to learn the style of *Journey to the West* and generate Chinese text with a classical feel.
 
-## 项目结构
+## Project Structure
+
 ```
 LSTM/
 ├── data/
-│   └── xyj.txt   # 《西游记》原著文本数据
+│   └── xyj.txt   # original text of Journey to the West
 ├── models/
-│   ├── lstm_xiyouji.pth   # 训练好的模型权重
-│   └── vocab.pkl    # 词汇表映射文件
-├── lstm-text-generated.ipynb # 主程序（Jupyter Notebook）
-└── README.md   # 项目说明文档
+│   ├── lstm_xiyouji.pth   # trained model weights
+│   └── vocab.pkl    # vocabulary mapping
+├── lstm-text-generated.ipynb # main notebook
+└── README.md   # this file
 ```
-## 功能特性
 
-- **字符级语言建模**：以单个汉字为最小单位进行建模，能够生成任意汉字组合
-- **多层 LSTM 架构**：3层 LSTM 网络，增强模型的表达能力
-- **Dropout 正则化**：防止过拟合，提高模型泛化能力
-- **混合精度训练**：支持自动混合精度（AMP），加速训练并减少显存占用
-- **断点续训**：支持从已保存的模型继续训练
-- **温度采样**：可调节的 temperature 参数控制生成文本的随机性
-- **多 GPU 支持**：支持 DataParallel 多卡并行训练
+## Features
 
-## 模型架构
+- **Character-level modeling** — treats each Chinese character as a token, so it can generate any combination of characters
+- **Multi-layer LSTM** — 3 LSTM layers for more expressive capacity
+- **Dropout** — reduces overfitting and improves generalization
+- **Mixed precision** — automatic mixed precision (AMP) speeds up training and lowers memory use
+- **Resume training** — continue from a saved checkpoint
+- **Temperature sampling** — adjustable temperature controls randomness
+- **Multi-GPU** — DataParallel support
 
-| 组件 | 配置 |
+## Model Architecture
+
+| Component | Configuration |
 |------|------|
-| 词嵌入层 | Embedding(4198, 256) |
-| LSTM 层 | 3层，隐藏维度 512 |
+| Embedding | Embedding(4198, 256) |
+| LSTM | 3 layers, hidden size 512 |
 | Dropout | 0.3 |
-| 输出层 | Linear(512, 4198) |
+| Output | Linear(512, 4198) |
 
-**模型参数量**：约 900 万参数（34.36 MB）
+**Parameters**: about 9M (34.36 MB)
 
-## 环境要求
+## Requirements
 
-- 相关环境依赖请进入jupyter notebook查看
+See the Jupyter notebook for the exact environment and dependencies.
 
-## 使用方法
+## Usage
 
-### 1. 训练模型
+### 1. Train the model
 
-打开 `lstm-text-generated.ipynb`，按顺序运行所有单元格即可开始训练。
+Open `lstm-text-generated.ipynb` and run all cells in order.
 
-关键配置参数（可在 Notebook 中修改）：
+Key settings (editable in the notebook):
 
 ```python
-# 数据配置
-SEQ_LENGTH = 100      # 输入序列长度
-BATCH_SIZE = 1024     # 批次大小
+# Data
+SEQ_LENGTH = 100      # input sequence length
+BATCH_SIZE = 1024     # batch size
 
-# 模型配置
-EMBED_DIM = 256       # 嵌入维度
-HIDDEN_DIM = 512      # LSTM 隐藏层维度
-NUM_LAYERS = 3        # LSTM 层数
-DROPOUT = 0.3         # Dropout 概率
+# Model
+EMBED_DIM = 256       # embedding dimension
+HIDDEN_DIM = 512      # LSTM hidden size
+NUM_LAYERS = 3        # LSTM layers
+DROPOUT = 0.3         # dropout probability
 
-# 训练配置
-EPOCHS = 10           # 训练轮数
-LEARNING_RATE = 0.001 # 学习率
-CONTINUE_TRAIN = 1    # 是否从已有模型继续训练
+# Training
+EPOCHS = 10           # training epochs
+LEARNING_RATE = 0.001 # learning rate
+CONTINUE_TRAIN = 1    # resume from an existing model
 
-# 生成配置
-GENERATE_LENGTH = 500 # 生成文本长度
-TEMPERATURE = 0.1     # 采样温度（越低越保守，越高越随机）
+# Generation
+GENERATE_LENGTH = 500 # generated text length
+TEMPERATURE = 0.1     # sampling temperature (lower = more conservative, higher = more random)
 ```
 
-### 2. 生成文本
+### 2. Generate text
 
-训练完成后，使用以下方式生成文本：
+After training:
 
 ```python
-# 加载模型
+# Load the model
 model = load_model_for_inference(MODEL_SAVE_PATH, VOCAB_SAVE_PATH, device)
 
-# 生成文本
+# Generate
 generated_text = generate_text(model, start_text="话说", length=500, device=device, temperature=0.8)
 print(generated_text)
 ```
 
-### 3. 温度参数说明
+### 3. Temperature
 
-- **temperature < 0.5**：生成文本更保守、确定性更强，接近原文风格
-- **temperature ≈ 0.8**：平衡创造性和连贯性
-- **temperature > 1.0**：生成文本更随机、创造性更强，但可能出现语法错误
+- **temperature < 0.5** — more conservative and deterministic, closer to the original style
+- **temperature ≈ 0.8** — balances creativity and coherence
+- **temperature > 1.0** — more random and creative, but grammar errors are more likely
 
-## 训练数据
+## Training Data
 
-- **数据来源**：《西游记》原著
-- **文本长度**：约 73.5 万字符
-- **词汇表大小**：4198 个唯一字符
+- **Source**: original text of *Journey to the West*
+- **Length**: about 735,000 characters
+- **Vocabulary**: 4,198 unique characters
 
-## 示例输出
+## Example Output
 
-使用不同的起始文本可以生成不同风格的段落：
+Different start texts lead to different styles:
 
-| 起始文本 | 生成风格 |
+| Start text | Generated style |
 |---------|---------|
-| 话说 | 叙述性开场 |
-| 悟空 | 孙悟空相关情节 |
-| 唐僧 | 唐僧相关情节 |
-| 那妖怪 | 战斗场景描述 |
+| 话说 | Narrative opening |
+| 悟空 | Sun Wukong-related episodes |
+| 唐僧 | Tang Sanzang-related episodes |
+| 那妖怪 | Battle scene descriptions |
 
-## 技术细节
+## Technical Details
 
-### 数据预处理
-- 去除多余空白和特殊字符
-- 构建字符到索引的映射表
-- 将文本转换为整数序列
+### Data Preprocessing
 
-### 训练策略
-- 使用 Adam 优化器
-- 学习率调度（ReduceLROnPlateau）
-- 梯度裁剪（防止梯度爆炸）
-- 每 1 个 epoch 保存一次模型
+- Remove extra whitespace and special characters
+- Build a character-to-index mapping
+- Convert text to integer sequences
 
-### 生成策略
-- 使用 softmax 概率分布采样
-- 支持温度调节控制随机性
-- 模型预热（priming）机制
+### Training
 
-## 注意事项
+- Adam optimizer
+- Learning-rate scheduling (ReduceLROnPlateau)
+- Gradient clipping (prevents exploding gradients)
+- Save the model every epoch
 
-1. 建议使用 GPU 进行训练，CPU 训练速度较慢
-2. 生成的文本可能存在语法不通顺的情况，可通过降低 temperature 改善
+### Generation
 
-## 许可证
+- Sample from the softmax distribution
+- Temperature controls randomness
+- Priming with a start text
 
-本项目仅供学习和研究使用。
+## Notes
 
-## 致谢
+1. Training on a GPU is recommended; CPU training is slow.
+2. Generated text may be ungrammatical in places. Lowering the temperature usually helps.
 
-- 训练数据来源于《西游记》原著
-- 使用 PyTorch 深度学习框架
+## License
 
->作者：Ailan Anjuxi
->联系方式：
-  邮箱：anjuxi.ME@outlook.com
-  SIP电话：sip:anjuxi@sip.linphone.org
+For learning and research use only.
+
+## Acknowledgements
+
+- Training data: original text of *Journey to the West*
+- Built with PyTorch
+
+> Author: Ailan Anjuxi
+> Contact:
+  Email: anjuxi.ME@outlook.com
+  SIP: sip:anjuxi@sip.linphone.org
